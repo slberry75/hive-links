@@ -1,4 +1,5 @@
 import { GameCell, GameInstance } from "./game-instance";
+import { createElementNSWithAttributes } from "./utils";
 
 export class GameRenderer {
 
@@ -26,15 +27,18 @@ export class GameRenderer {
         }
     }
 
-    static getCellHexagon(cell:GameCell):SVGSVGElement {
-        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("class", "game-cell");
-        svg.setAttribute('viewBox', '0 0 1 .866');
+    static getCellHexagon(cell:GameCell):SVGElement {
+        const svg = createElementNSWithAttributes('svg', {
+                class:'game-cell',
+                viewBox: '0 0 1 .866'    
+            }); 
         svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+ 
+        const path = createElementNSWithAttributes('path', {
+                d: 'M 0, .433 L .25, .866 L .75, .866 L 1, .433 L .75, 0 L .25, 0 Z',
+                fill: 'currentColor'
+            });
         
-        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute('d', 'M 0, .433 L .25, .866 L .75, .866 L 1, .433 L .75, 0 L .25, 0 Z');
-        path.setAttribute('fill', 'currentColor');
         svg.appendChild(path);
         return svg;
     }
