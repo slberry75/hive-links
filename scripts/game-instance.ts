@@ -12,10 +12,8 @@ export class GameInstance {
     debugLayout: boolean;
 
     // computed properties:
-    get cellSize(): ElementDimensions {
-        const w = Math.floor(this.container.width / (this.rings * 2 + 1));
-        const h = Math.sqrt(3)*w*.5; 
-        return {width: w, height: h};
+    get cellSize(): number {
+        return Math.floor(this.container.widthHeight / (this.rings * 2 + 1));
     }
 
     constructor(puzzle:HexLinkPuzzle, container:GridContainer, debugLayout:boolean = false) {
@@ -45,9 +43,7 @@ export class GameCell extends PuzzleGridCell {
         
         return Object.fromEntries(
             Object.entries(this.coordinates).map(([key, value]) => {
-                const thisDimension =  key === 'x' ? instance.cellSize.width : instance.cellSize.height;
-                const thisOrigin = key === 'x' ? instance.container.origin.x : instance.container.origin.y;
-                return [key, (value*thisDimension*.6) + thisOrigin - (thisDimension / 2)]
+                return [key, (value*instance.cellSize * .55) + instance.container.origin - (instance.cellSize/2)];
             })
         ) as NormalizedPixelLocation
     }

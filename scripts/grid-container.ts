@@ -9,15 +9,14 @@ export class GridContainer {
     cellContainers: HTMLElement[]|null = null;
     
     // computed properties
-    get width():number {
-        return this.element.getBoundingClientRect().width;
+    get widthHeight(): number {
+        const clientRect = this.element.getBoundingClientRect(); 
+        return Math.max(clientRect.width, clientRect.height);
     }
-    get height():number {
-        return this.element.getBoundingClientRect().height;
-    }
+    
 
-    get origin():NormalizedPixelLocation {
-        return {x: this.width/2, y: this.height/2};//this.height/2;
+    get origin():number {
+        return this.widthHeight/2;
     }
 
     constructor(element:HTMLElement) {
