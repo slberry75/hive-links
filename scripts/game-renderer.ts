@@ -37,9 +37,39 @@ export class GameRenderer {
         const path = createElementNSWithAttributes('path', {
                 d: 'M 0, .433 L .25, .866 L .75, .866 L 1, .433 L .75, 0 L .25, 0 Z',
                 fill: 'currentColor'
-            });
+            }) as SVGPathElement;
+        
+        const defs = createElementNSWithAttributes('defs');
+        svg.appendChild(defs);
+
+        const filterId = `emboss-${cell.axialCoordinates.toArray().join('_')}`;
+        const filter = createElementNSWithAttributes('filter', {id: filterId, opacity:'0.1'});
+        defs.appendChild(filter);
+
+        let filterChildren:SVGElement[] = [
+            createElementNSWithAttributes('feGaussianBlur', {in:'SourceAlpha', stdDeviation: '0.02', result: 'blur'} ),
+            createElementNSWithAttributes('feOffset', {in:'blur', dx: '-0.01', dy: '-0.01', result: 'lightShadow'}),
+            createElementNSWithAttributes("feFlood", {'flood-color':'"rgba(255, 255, 255, 1)',result: 'lightColor'}),
+            createElementNSWithAttributes("feComposite", {in:'lightColor', in2:'lightShadow', operator:'in', result:'lightHighlight'} ),
+            createElementNSWithAttributes('feOffset', {in:'blur', dx:'0.01', dy: '0.01', result: 'darkShadow'}),
+            createElementNSWithAttributes('feFlood', {'flood-color':'rgba(0, 0, 0, 0.1)', result: 'darkColor'} ),
+            createElementNSWithAttributes('feComposite', {in:'darkColor', in2:'darkShadow', 'operator':'in',result:'darkHighlight'} ),
+        ]
+        
+        filter.append(...filterChildren);
+
+        const faMerge = createElementNSWithAttributes('feMerge');
+        faMerge.append(
+            createElementNSWithAttributes('feMergeNode', {in: 'darkHighlight'}),
+            createElementNSWithAttributes('feMergeNode', {in: 'lightHighlight'}),
+            createElementNSWithAttributes('feMergeNode', {in: 'SourceGraphic'}),
+        )
+        filter.appendChild(faMerge);
+
+        path.setAttribute('filter', `url(#${filterId})`);
         
         svg.appendChild(path);
+        
         return svg;
     }
 
