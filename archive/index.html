@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive Links - Hex Grid</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <h1>🐝 Hive Links</h1>
+    
+    <div class="instructions">
+        <strong>Goal:</strong> Fill the hexagonal grid with colors so that:
+        <ul>
+            <li>Numbers show how many neighbors share the same color</li>
+            <li>All cells of each color form one connected group</li>
+            <li>No single cell is completely surrounded by the opposite color</li>
+        </ul>
+    </div>
+    
+    <div id="game-container">
+        <div class="controls">
+            <div class="split-button">
+                <button onclick="game.toggleMode()" id="mode-button">Paint</button>
+                <select id="color-select" onchange="game.setSelectedColor(this.value)">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <button onclick="game.newGame()">New Game</button>
+            <button onclick="game.checkSolution()">Check Solution</button>
+            <button onclick="game.reset()">Reset</button>
+        </div>
+        
+        <div id="hex-grid"></div>
+        
+        <div id="status">Click hexagons to change their color!</div>
+    </div>
+
+</body>
+</html>

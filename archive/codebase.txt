@@ -1,0 +1,447 @@
+=== ./index.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive Links - Hex Grid</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <h1>🐝 Hive Links</h1>
+    
+    <div class="instructions">
+        <strong>Goal:</strong> Fill the hexagonal grid with Light (green) and Dark (blue) colors so that:
+        <ul>
+            <li>Numbers show how many neighbors share the same color</li>
+            <li>All cells of each color form one connected group</li>
+            <li>No single cell is completely surrounded by the opposite color</li>
+        </ul>
+        <strong>Click cells to cycle:</strong> Empty → Light → Dark → Empty
+    </div>
+    
+    <div id="game-container">
+        <div class="controls">
+            <div class="split-button">
+                <button onclick="game.toggleMode()" id="mode-button">Paint</button>
+                <select id="color-select" onchange="game.setSelectedColor(this.value)">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <button onclick="game.newGame()">New Game</button>
+            <button onclick="game.checkSolution()">Check Solution</button>
+            <button onclick="game.reset()">Reset</button>
+        </div>
+        
+        <div id="hex-grid"></div>
+        
+        <div id="status">Click hexagons to change their color!</div>
+    </div>
+
+</body>
+</html>=== ./script.js ===
+// Cube coordinate system for hexagons
+// This makes neighbor calculations much easier!
+class CubeHex {
+    constructor(q, r, s) {
+        this.q = q;  // x-axis
+        this.r = r;  // y-axis  
+        this.s = s;  // z-axis
+            
+        // Cube coordinates must always sum to zero
+        if (Math.abs(q + r + s) > 0.0001) {
+            throw new Error(`Invalid cube coordinates: q=${q}, r=${r}, s=${s}`);
+        }
+    }
+    
+    // Create from axial coordinates (what we'll use for positioning)
+    static fromAxial(q, r) {
+        return new CubeHex(q, r, -q - r);
+    }
+    
+    // Convert to screen coordinates for CSS positioning
+    toPixel(size = 35) {
+        const x = size * (3/2 * this.q);
+        const y = size * (Math.sqrt(3)/2 * this.q + Math.sqrt(3) * this.r);
+        return { x: x + 250, y: y + 200 }; // Center in our container
+    }
+    
+    // Get all 6 neighbors
+    neighbors() {
+        const directions = [
+            [+1, -1,  0], [+1,  0, -1], [ 0, +1, -1],
+            [-1, +1,  0], [-1,  0, +1], [ 0, -1, +1]
+        ];
+        
+        return directions.map(([dq, dr, ds]) => 
+            new CubeHex(this.q + dq, this.r + dr, this.s + ds)
+        );
+    }
+    
+    // Distance between two hexes
+    static distance(a, b) {
+        return Math.max(
+            Math.abs(a.q - b.q),
+            Math.abs(a.r - b.r),
+            Math.abs(a.s - b.s)
+        );
+    }
+    
+    // Convert to string key for maps/sets
+    toString() {
+        return `${this.q},${this.r},${this.s}`;
+    }
+    
+    // Check if two hexes are equal
+    equals(other) {
+        return this.q === other.q && this.r === other.r && this.s === other.s;
+    }
+}
+
+// Game state management
+class HiveLinksGame {
+    constructor() {
+        this.hexes = new Map(); // coord string -> {hex: CubeHex, state: 'empty'|'light'|'dark', clue: number}
+        this.gridElement = document.getElementById('hex-grid');
+        this.statusElement = document.getElementById('status');
+        this.interactionMode = 'paint'; // 'paint' or 'hint'
+        this.selectedColorIndex = 0; 
+
+        this.colors = [
+            [76, 175, 80],   // Green  
+            [33, 150, 243]   // Blue
+        ];
+        this.init();
+    }
+    
+    init() {
+        this.generateColorStyles(this.colors);
+        this.createGrid();
+        this.render();
+        this.updateStatus("Click hexagons to change their color!");
+    }
+
+    generateColorStyles(colors) {
+        let css = '';
+        colors.forEach((rgb, index) => {
+            const [r, g, b] = rgb;
+            css += `
+                /******************************************/
+                /* Color ${index} - rgb(${r}, ${g}, ${b}) */
+                /******************************************/
+                .hex[data-color="${index}"] .hex-shape {
+                    background: rgb(${r}, ${g}, ${b});
+                    color: white;
+                }
+                .hex.hinted[data-color="${index}"] .hex-shape {
+                    background: transparent;
+                    box-shadow: inset 0 0 10px 10px rgba(${r}, ${g}, ${b}, 0.5);
+                }
+            `;
+        });
+
+        // Update or create style tag
+        let styleTag = document.getElementById('dynamic-colors');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'dynamic-colors';
+            document.head.appendChild(styleTag);
+        }
+        styleTag.textContent = css;
+
+    }
+    
+    // Create a simple 7-hex flower pattern (center + 6 neighbors)
+    createGrid() {
+        const center = CubeHex.fromAxial(0, 0);
+        const positions = [center, ...center.neighbors()];
+        
+        positions.forEach((hex, index) => {
+            this.hexes.set(hex.toString(), {
+                hex: hex,
+                state: 'empty',
+                clue: index === 0 ? 2 : null,  // Center has clue "2" for demo
+                hinted: false
+            });
+        });
+    }
+    
+    // Render all hexagons to the DOM
+    render() {
+        this.gridElement.innerHTML = '';
+        
+        this.hexes.forEach((data, key) => {
+            const hexElement = this.createHexElement(data);
+            this.gridElement.appendChild(hexElement);
+        });
+    }
+    
+    // Create a single hex DOM element
+    createHexElement(data) {
+        const { hex, state, clue, hinted } = data;
+        const pixel = hex.toPixel();
+        
+        const hexDiv = document.createElement('div');
+        hexDiv.className = `hex ${state === 'empty' ? state : ''} ${hinted ? 'hinted' : ''}`;
+        hexDiv.setAttribute('data-color', state);
+
+        hexDiv.style.left = `${pixel.x - 30}px`;
+        hexDiv.style.top = `${pixel.y - 30}px`;
+        
+        // Create simple hex shape
+        const hexShape = document.createElement('div');
+        hexShape.className = 'hex-shape';
+        hexShape.textContent = clue !== null ? clue : '';
+        
+        hexDiv.appendChild(hexShape);
+        
+        // Add click handler
+        hexDiv.addEventListener('click', () => this.handleHexClick(hex));
+        
+        return hexDiv;
+    }
+    
+    // Handle clicking on a hex
+    handleHexClick(hex) {
+        const key = hex.toString();
+        const data = this.hexes.get(key);
+        
+        if (!data) return;
+        
+        const states = ['empty', ...Array.from({length: this.colors.length}, (_, i) => i.toString())];
+        if (this.interactionMode === 'hint' != data.hinted) {
+            data.state = 'empty';
+        }
+        const currentIndex = states.indexOf(data.state);
+        const nextIndex = (currentIndex + 1) % states.length;
+        
+        data.state = states[nextIndex];
+        data.hinted = this.interactionMode === 'hint';
+        
+        this.render();
+        this.checkNeighborCounts();
+    }
+    
+    // Check if neighbor counts match clues
+    checkNeighborCounts() {
+        let allCorrect = true;
+        let messages = [];
+        
+        this.hexes.forEach((data, key) => {
+            if (data.clue !== null) {
+                const neighborCount = this.countSameColorNeighbors(data.hex, data.state);
+                const isCorrect = neighborCount === data.clue;
+                
+                if (!isCorrect) {
+                    allCorrect = false;
+                }
+                
+                messages.push(`${data.clue}-clue: ${neighborCount}/${data.clue} neighbors ${isCorrect ? '✓' : '✗'}`);
+            }
+        });
+        
+        this.updateStatus(messages.join(' | '));
+        
+        if (allCorrect && this.hasAnyColors()) {
+            this.updateStatus("🎉 Clues satisfied! Now check connectivity rules...");
+        }
+    }
+    
+    // Count neighbors with same color as given hex
+    countSameColorNeighbors(hex, state) {
+        if (state === 'empty') return 0;
+        
+        const neighbors = hex.neighbors();
+        let count = 0;
+        
+        neighbors.forEach(neighbor => {
+            const neighborData = this.hexes.get(neighbor.toString());
+            if (neighborData && neighborData.state === state) {
+                count++;
+            }
+        });
+        
+        return count;
+    }
+    
+    // Check if player has placed any colors
+    hasAnyColors() {
+        for (let [key, data] of this.hexes) {
+            if (data.state !== 'empty') return true;
+        }
+        return false;
+    }
+    
+    // Update status display
+    updateStatus(message) {
+        this.statusElement.textContent = message;
+    }
+    
+    // Game controls
+    newGame() {
+        this.updateStatus("New game! Try to make the center hex have exactly 2 same-color neighbors.");
+        // For now, just reset
+        this.reset();
+    }
+    
+    reset() {
+        this.hexes.forEach(data => {
+            data.state = 'empty';
+            data.hinted = false;
+        });
+        this.render();
+        this.updateStatus(`Grid reset! Mode: ${this.interactionMode === 'paint' ? 'Paint colors' : 'Mark hints'}`);
+    }
+    
+    checkSolution() {
+        this.checkNeighborCounts();
+        // TODO: Add connectivity and no-holes checks
+    }
+    
+    toggleMode() {
+        this.interactionMode = this.interactionMode === 'paint' ? 'hint' : 'paint';
+        const modeText = this.interactionMode === 'paint' ? 'Paint colors' : 'Mark hints';
+        this.updateStatus(`Mode: ${modeText} - Click hexes to ${this.interactionMode === 'paint' ? 'change colors' : 'mark/unmark'}`);
+    }
+}
+
+// Initialize the game when page loads
+let game;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Starting Hive Links...");
+    game = new HiveLinksGame();
+    console.log("Game initialized with cube coordinate system!");
+});=== ./styles.css ===
+/* Basic page styling */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#game-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.instructions {
+    max-width: 500px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #e3f2fd;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.controls {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background: #2196F3;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #1976D2;
+}
+
+/* Hex grid container */
+#hex-grid {
+    position: relative;
+    width: 500px;
+    height: 400px;
+    margin: 20px auto;
+    background: #fafafa;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+}
+
+/* Individual hexagon styling */
+.hex {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: -5px; /* Pull hexes closer together */
+}
+
+/* Create proper hexagon shape using clip-path */
+.hex-shape {
+    width: 100%;
+    height: 92%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Hex states */
+.hex.empty .hex-shape {
+    background: #e0e0e0;
+    color: #666;
+}
+
+/* .hex.light .hex-shape {
+    background: rgb(76, 175, 80);
+    color: white;
+    box-shadow: inset 0 0 0 0 rgba(76,175,80,0.5);
+
+}
+
+.hex.dark .hex-shape {
+    background: rgb(33, 150, 243);
+    color: white;
+    box-shadow: inset 0 0 0 0 rgba(33,150,243,0.5);
+} */
+
+/* Hint mode styling */
+/* .hex.hinted .hex-shape {
+    box-shadow: inset 0 0 10px 10px!important;
+} */
+
+/* Hover effects */
+.hex:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+.hex:hover .hex-shape {
+    filter: brightness(1.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* Status display */
+#status {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+    color: #555;
+}

@@ -1,0 +1,109 @@
+/* Basic page styling */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#game-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.instructions {
+    max-width: 500px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #e3f2fd;
+    border-radius: 5px;
+    text-align: left;
+    display: none;
+}
+
+.controls {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background: #2196F3;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #1976D2;
+}
+
+/* Hex grid container */
+#hex-grid {
+    position: relative;
+    max-width: 800px;
+    max-height: 800px;
+    aspect-ratio: 1 / 1; /* Adjusted for hexagonal grid */
+    margin: 20px auto;
+    background: #fafafa;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+#hex-grid .hex-cell-container {
+    position: absolute;
+    /* border: 1px solid #333; */
+    padding: 2px;
+    box-sizing: border-box; /* Ensures padding and border are included in width/height */
+}
+
+#hex-grid .hex-cell-container .game-cell {
+    width: 100%;
+    height: 100%;
+    color: rgb(210, 201, 160);
+    border: 0
+    box-sizing: border-box;
+}
+
+/*** Developoment Styles (only for development mode **/
+
+.ring-container {
+    position:absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;  
+    right: 0;
+}
+
+.ring-container .grid-ring {
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;  
+    bottom: 0;
+    right: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(118, 164, 228, 1);
+    aspect-ratio: 1 / 1; /* Ensures circular shape */
+}
+
+
+.test-colors {
+    color: rgb(93, 0, 255);
+    color: rgb(255, 166, 0);
+    color: rgb(255, 0, 153);
+}
