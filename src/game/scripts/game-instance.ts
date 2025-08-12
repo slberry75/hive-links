@@ -1,6 +1,8 @@
 import { GameRenderer } from "./game-renderer";
 import { GridContainer } from "./grid-container";
-import { AxialCoordinates, HexLinkPuzzle, PuzzleGridCell } from "./puzzle-generator";
+import { HexLinkPuzzle } from "./puzzle-generator";
+import { AxialCoordinates } from "../../utils/coordinates";
+import { HexLinkCell } from "../../utils/HexLinkCell";
 
 export class GameInstance {
     // properties
@@ -31,7 +33,7 @@ export class GameInstance {
 
 }
 
-export class GameCell extends PuzzleGridCell {
+export class GameCell extends HexLinkCell {
     readonly userColor:HexLinkColor|null = null;
     readonly userGuess:HexLinkColor|null = null;
 
