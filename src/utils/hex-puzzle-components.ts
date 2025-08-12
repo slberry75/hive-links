@@ -1,4 +1,4 @@
-import { AxialCoordinates, AxialOffsets } from "./hex-links-coordinates";
+import { AxialCoordinates } from "./hex-links-coordinates";
 
 /**
  * class to represent a color region in a Hex Link Puzzle
@@ -7,16 +7,53 @@ export class ColorRegion {
 
     //properties
     color: HexLinkColor
-    cells: HexLinkCell[] = [];
+    cells: AxialCoordinates[] = [];
 
     // derived properties
-    expansionCells: HexLinkCell[]
+    get neighboringCoordinates(): AxialCoordinates[] {
+        return this.cells
+                .flatMap(cell => cell.getNeigboringCoordinates())
+                .filter(cell => !this.isMemberCell(cell))
+    }
+
+    constructor(color: HexLinkColor) {
+        this.color = color;
+    }
+
+    get memberCoordinates(): AxialCoordinates[] {
+        return this.cells;
+    }
+
+    private isMemberCell(axialCoords: AxialCoordinates): boolean {
+        return -1 < this.memberCoordinates.findIndex(c => JSON.stringify(c) === JSON.stringify(axialCoords))
+    }
+}
+
+export class HexLinkPuzzle {
+    colors: PuzzleColorOptions;
+    difficulty: PuzzleDifficulty;
+    rings: number;
+    // cells: Record<string, HexLinkCell> = {};
+    cells: HexLinkCell[] = [];
+    regions: ColorRegion[] = [];
+    solution : Record<string,HexLinkColor> = {};
+    
+    constructor(colors:PuzzleColorOptions, difficulty:PuzzleDifficulty, rings:number) {
+        this.colors = colors;
+        this.difficulty = difficulty;
+        this.rings = rings;
+    }
+
+
+    public largeEnoughForCoords(coords: AxialCoordinates): boolean {
+        return Math.max(Math.abs(coords.q), Math.abs(coords.r), Math.abs(coords.s)) <= this.rings
+    }
+    
 }
 
 export class HexLinkCell {
     // properties
     axialCoordinates: AxialCoordinates;
-    solvedColor?: HexLinkColor ;  
     clue?: PuzzleClue
     barredNeighbors?:AxialCoordinates[];
 
@@ -43,10 +80,9 @@ export class HexLinkCell {
     }
 
     //constructor
-    constructor(axialCoords:AxialCoordinates, solvedColor=undefined, clue=undefined, barredNeighbors=undefined) {
+    constructor(axialCoords:AxialCoordinates, clue=undefined, barredNeighbors=undefined) {
         this.axialCoordinates = axialCoords;
         this.clue = clue;
-        this.solvedColor = solvedColor;
         this.barredNeighbors = barredNeighbors;
     }
 }

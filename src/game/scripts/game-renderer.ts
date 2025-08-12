@@ -12,9 +12,8 @@ export class GameRenderer {
         if (instance.debugLayout) {
             this.renderLayoutDebug(instance);
         }
-        if (instance.cells) {
-            Object.values(instance.cells)
-                .forEach(cell => {
+        if (instance.cells.length) {
+            instance.cells.forEach((cell,idx) => {
                     const realCoords = cell.scaleCoordinates(instance);
                     const el = document.createElement('div');
                     el.dataset.axialCoordinates = cell.axialCoordinates.toString();

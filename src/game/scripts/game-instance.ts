@@ -1,8 +1,7 @@
 import { GameRenderer } from "./game-renderer";
 import { GridContainer } from "./grid-container";
-import { HexLinkPuzzle } from "./puzzle-generator";
 import { AxialCoordinates } from "../../utils/hex-links-coordinates";
-import { HexLinkCell } from "../../utils/hex-puzzle-components";
+import { HexLinkPuzzle, HexLinkCell } from "../../utils/hex-puzzle-components";
 
 export class GameInstance {
     // properties
@@ -10,7 +9,7 @@ export class GameInstance {
     readonly difficulty: PuzzleDifficulty;
     readonly rings: number;
     readonly container: GridContainer;
-    readonly cells?: Record<string, GameCell>;
+    readonly cells: GameCell[] = [];
     debugLayout: boolean;
 
     // computed properties:
@@ -24,10 +23,8 @@ export class GameInstance {
         this.rings = puzzle.rings;
         this.container = container;
         this.debugLayout = debugLayout;
-        this.cells = Object.fromEntries(
-            Object.entries(puzzle.cells as object).map(([key, value]) => [key, new GameCell(value.axialCoordinates)])
-        );
-
+        this.cells = Object.entries(puzzle.cells as object).map(([key, value]) => new GameCell(value.axialCoordinates));
+        console.log(this.cells)
         GameRenderer.render(this);
     }
 
