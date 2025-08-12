@@ -12,6 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"]
   },
-  "include": ["scripts/**/*", "*.ts"],
+  "include": ["src/scripts/**/*", "*.ts"],
   "exclude": ["node_modules"]
 }
