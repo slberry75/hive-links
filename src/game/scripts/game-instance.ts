@@ -1,8 +1,8 @@
 import { GameRenderer } from "./game-renderer";
 import { GridContainer } from "./grid-container";
 import { HexLinkPuzzle } from "./puzzle-generator";
-import { AxialCoordinates } from "../../utils/coordinates";
-import { HexLinkCell } from "../../utils/HexLinkCell";
+import { AxialCoordinates } from "../../utils/hex-links-coordinates";
+import { HexLinkCell } from "../../utils/hex-puzzle-components";
 
 export class GameInstance {
     // properties

@@ -1,5 +1,5 @@
-import { AxialOffsets, AxialCoordinates } from "../../utils/coordinates";
-import { HexLinkCell } from "../../utils/HexLinkCell";
+import { AxialOffsets, AxialCoordinates } from "../../utils/hex-links-coordinates";
+import { HexLinkCell } from "../../utils/hex-puzzle-components";
 export class HexLinkPuzzle {
     colors: PuzzleColorOptions;
     difficulty: PuzzleDifficulty;

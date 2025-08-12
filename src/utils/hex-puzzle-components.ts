@@ -1,4 +1,4 @@
-import { AxialCoordinates, AxialOffsets } from "./coordinates";
+import { AxialCoordinates, AxialOffsets } from "./hex-links-coordinates";
 
 export class HexLinkCell {
     // properties
