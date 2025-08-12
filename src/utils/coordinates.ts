@@ -1,4 +1,4 @@
-const AxialOffsets =  [
+export const AxialOffsets =  [
     [1, 0, -1], // Right        
     [1, -1, 0], // Top Right  
     [0, -1, 1], // Top Left
