@@ -4,9 +4,9 @@
   "main": "script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "vite",
-    "build": "vite build", 
-    "preview": "vite preview",
+    "dev": "vite src/game",
+    "build": "vite build src/game", 
+    "preview": "vite preview src/game",
     "flatten": "./flatten.sh > codebase.txt"  
   },
   "keywords": [],
