@@ -4,6 +4,9 @@ import { createElementNSWithAttributes } from "./utils";
 export class GameRenderer {
 
     static render(instance:GameInstance):void {
+        instance.container.element.replaceChildren();
+        instance.container.cellContainers = [];
+
         instance.container.ringContainer = null; 
         
         if (instance.debugLayout) {
@@ -43,13 +46,13 @@ export class GameRenderer {
         svg.appendChild(defs);
 
         const filterId = `emboss-${cell.axialCoordinates.toArray().join('_')}`;
-        const filter = createElementNSWithAttributes('filter', {id: filterId, opacity:'0.1'});
+        const filter = createElementNSWithAttributes('filter', {id: filterId});
         defs.appendChild(filter);
 
         let filterChildren:SVGElement[] = [
             createElementNSWithAttributes('feGaussianBlur', {in:'SourceAlpha', stdDeviation: '0.02', result: 'blur'} ),
             createElementNSWithAttributes('feOffset', {in:'blur', dx: '-0.01', dy: '-0.01', result: 'lightShadow'}),
-            createElementNSWithAttributes("feFlood", {'flood-color':'"rgba(255, 255, 255, 1)',result: 'lightColor'}),
+            createElementNSWithAttributes("feFlood", {'flood-color':'rgba(255, 255, 255, 1)',result: 'lightColor'}),
             createElementNSWithAttributes("feComposite", {in:'lightColor', in2:'lightShadow', operator:'in', result:'lightHighlight'} ),
             createElementNSWithAttributes('feOffset', {in:'blur', dx:'0.01', dy: '0.01', result: 'darkShadow'}),
             createElementNSWithAttributes('feFlood', {'flood-color':'rgba(0, 0, 0, 0.1)', result: 'darkColor'} ),
