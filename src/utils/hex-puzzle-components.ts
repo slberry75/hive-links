@@ -1,5 +1,18 @@
 import { AxialCoordinates, AxialOffsets } from "./hex-links-coordinates";
 
+/**
+ * class to represent a color region in a Hex Link Puzzle
+ */
+export class ColorRegion {
+
+    //properties
+    color: HexLinkColor
+    cells: HexLinkCell[] = [];
+
+    // derived properties
+    expansionCells: HexLinkCell[]
+}
+
 export class HexLinkCell {
     // properties
     axialCoordinates: AxialCoordinates;
@@ -26,9 +39,7 @@ export class HexLinkCell {
     }
 
     get neighbors():AxialCoordinates[] {
-      return AxialOffsets.map(offset => {
-        return { q: offset[0], r: offset[1], s: offset[2]};
-      }).map(offset => new AxialCoordinates([this.q + offset.q, this.r + offset.r, this.s + offset.s]));  
+        return this.axialCoordinates.getNeigboringCoordinates()
     }
 
     //constructor

@@ -1,3 +1,7 @@
+const Q_OFFSET = 0;
+const R_OFFSET = 1;
+const S_OFFSET = 2;
+
 export const AxialOffsets =  [
     [1, 0, -1], // Right        
     [1, -1, 0], // Top Right  
@@ -18,9 +22,9 @@ export class AxialCoordinates {
     constructor(qOrCoords:[number,number,number]|number, r?: number, s?: number) {
         if (Array.isArray(qOrCoords)) 
         {
-            r = qOrCoords[1];
-            s = qOrCoords[2];
-            qOrCoords = qOrCoords[0];
+            r = qOrCoords[R_OFFSET];
+            s = qOrCoords[S_OFFSET];
+            qOrCoords = qOrCoords[Q_OFFSET];
         }
           
         if (r === undefined || s === undefined)  
@@ -37,6 +41,12 @@ export class AxialCoordinates {
             this.r = r;
             this.s = s;   
         }
+    }
+
+    getNeigboringCoordinates() {
+         return AxialOffsets.map(offset => {
+         return { q: offset[Q_OFFSET], r: offset[R_OFFSET], s: offset[S_OFFSET]};
+       }).map(offset => new AxialCoordinates([this.q + offset.q, this.r + offset.r, this.s + offset.s]));      
     }
 
     toArray():[number,number,number] {
