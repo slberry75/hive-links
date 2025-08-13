@@ -1,6 +1,6 @@
 import { AxialCoordinates } from "../utils/hex-links-coordinates";
 import { HexLinkPuzzle, HexLinkCell, ColorRegion } from "../utils/hex-puzzle-components";
-import { getRandomEntry } from "../utils/utilities";
+import { getRandomEntry, shuffleArray } from "../utils/utilities";
 
 
 export class PuzzleGenerator extends HexLinkPuzzle {
@@ -21,7 +21,6 @@ export class PuzzleGenerator extends HexLinkPuzzle {
     generate():HexLinkPuzzle {
         this.cells = this.initCells();
         this.initRegions();
-        console.log('generating puzzle...', this);
         return this;
     }
 
@@ -48,12 +47,46 @@ export class PuzzleGenerator extends HexLinkPuzzle {
         return this.cells;
     }
 
+    /**
+     * Overwrites the clue for this cell every time
+     * @param axialCoords - location of cell to be given clue
+     * @param color - color of cell
+     * @param matches - number of matches adjacent to cell
+     */
+    private assignClue(axialCoords:AxialCoordinates, color?:HexLinkColor, matches?:number) {
+        let thisCell = this.cells.filter(c => c.axialCoordinates.toString() === axialCoords.toString()).pop();
+        if (!thisCell) return;//throw new RangeError(`Cannot assign a clue to axial coordinates ${axialCoords.toString()}`)
+        if (color === undefined && matches === undefined) {
+                throw new TypeError(`Invalid Arguments: assignClue expects either the argument color or matches.`);
+            }
+        let clue:PuzzleClue = { color: color, matches: matches }
+        thisCell.clue = clue;
+    }
+
+    private getCellFromCoords(coords:AxialCoordinates) :HexLinkCell|undefined {
+        return this.cells.filter(x => 
+            x.axialCoordinates.toString() === coords.toString()
+        ).pop();
+    }
+
+    private hasEmptyOrMatchingNeighbors(coords: AxialCoordinates) : boolean {
+        const coordColor = this.solution[coords.toString()] ;
+        if (coordColor) {
+            return coords.getNeigboringCoordinates().filter(c => this.solution[c.toString()]).length > 0;
+        }
+        return false;
+    }
+
     private assignNewCell(region: ColorRegion) : void {
-        const cellChoices = region.neighboringCoordinates && region.neighboringCoordinates.length ?
-            region.neighboringCoordinates : this.unassignedCells;
-        const newCell = getRandomEntry(this.unassignedCells);
-        this.solution[newCell.toString()] = region.color;
-        region.cells.push(newCell);
+        const cellChoices = (region.neighboringCoordinates && region.neighboringCoordinates.length ?
+            region.neighboringCoordinates : this.unassignedCells)
+            .filter(c => !this.solution[c.toString()]);
+        shuffleArray(cellChoices);
+
+        const newCoords = getRandomEntry(cellChoices);
+        this.solution[newCoords.toString()] = region.color;
+        this.assignClue(newCoords, region.color);
+        region.cells.push(newCoords);
     }
 
     private initRegions  = ():void => {
@@ -61,16 +94,8 @@ export class PuzzleGenerator extends HexLinkPuzzle {
         while(this.unassignedCells.length > 0) {
             this.regions.forEach(region => {
                 this.assignNewCell(region);
-                console.log(`Region ${region.color}`, region)
             });
-            break;
         }
-        console.log(this.solution)
-        // while(this.unassignedCells.length) {
-        //     this.regions.forEach(region => {
-        //         let neighbors = [ ...region.neighboringCoordinates]
-        //     })
-        // }
     }
 
     static getDefaultColors():PuzzleColorOptions {

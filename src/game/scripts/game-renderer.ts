@@ -6,17 +6,31 @@ export class GameRenderer {
     static render(instance:GameInstance):void {
         instance.container.element.replaceChildren();
         instance.container.cellContainers = [];
+        let style = document.querySelector('style#dynamic-styles');
+        if (!style) {
+            style = document.createElement('style');
+            document.head.appendChild(style);
+        }
+        style?.replaceChildren();
+        instance.colors.forEach((color,idx) =>
+            style.innerHTML += `\n[data-clue-color="${idx}"] .game-cell  {\n\tcolor: rgb(${color}) !important;\n}`
+        )
 
         instance.container.ringContainer = null; 
-        
+        const el = document.createElement('style');
+        instance.container.element.append(el);
         if (instance.debugLayout) {
             this.renderLayoutDebug(instance);
         }
+        
         if (instance.cells.length) {
             instance.cells.forEach((cell,idx) => {
                     const realCoords = cell.scaleCoordinates(instance);
                     const el = document.createElement('div');
                     el.dataset.axialCoordinates = cell.axialCoordinates.toString();
+                    if(cell.clue?.color) {
+                        el.dataset.clueColor = instance.colors.indexOf(cell.clue.color).toString();
+                    }
                     el.className = 'hex-cell-container';
                     el.style.width = `${instance.cellSize}px`;
                     el.style.top = `${realCoords.y}px`

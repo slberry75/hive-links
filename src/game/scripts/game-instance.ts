@@ -10,6 +10,7 @@ export class GameInstance {
     readonly rings: number;
     readonly container: GridContainer;
     readonly cells: GameCell[] = [];
+    readonly solution: Record<string, HexLinkColor> = {}
     debugLayout: boolean;
 
     // computed properties:
@@ -23,8 +24,7 @@ export class GameInstance {
         this.rings = puzzle.rings;
         this.container = container;
         this.debugLayout = debugLayout;
-        this.cells = Object.entries(puzzle.cells as object).map(([key, value]) => new GameCell(value.axialCoordinates));
-        console.log(this.cells)
+        this.cells = Object.entries(puzzle.cells as object).map(([key, value]) => new GameCell(value.axialCoordinates, value.clue, value.barredNeighbors ));
         GameRenderer.render(this);
     }
 
@@ -34,8 +34,12 @@ export class GameCell extends HexLinkCell {
     readonly userColor:HexLinkColor|null = null;
     readonly userGuess:HexLinkColor|null = null;
 
-    constructor(axialCoords:AxialCoordinates) {
-        super(axialCoords);
+    constructor(
+        axialCoords: AxialCoordinates, 
+        clue: PuzzleClue|undefined=undefined, 
+        barredNeighbors: AxialCoordinates[] | undefined = undefined 
+    ) {
+        super(axialCoords, clue, barredNeighbors);
     }
 
     scaleCoordinates(instance: GameInstance):NormalizedPixelLocation  {

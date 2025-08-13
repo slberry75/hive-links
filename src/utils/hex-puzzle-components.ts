@@ -80,7 +80,11 @@ export class HexLinkCell {
     }
 
     //constructor
-    constructor(axialCoords:AxialCoordinates, clue=undefined, barredNeighbors=undefined) {
+    constructor(
+        axialCoords:AxialCoordinates, 
+        clue:PuzzleClue|undefined=undefined, 
+        barredNeighbors:AxialCoordinates[]|undefined=undefined
+    ) {
         this.axialCoordinates = axialCoords;
         this.clue = clue;
         this.barredNeighbors = barredNeighbors;
