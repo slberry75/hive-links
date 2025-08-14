@@ -36,6 +36,11 @@ export class GameRenderer {
                     el.style.top = `${realCoords.y}px`
                     el.style.left = `${realCoords.x}px`
                     el.appendChild(this.getCellHexagon(cell));
+                    if (cell.clue?.matches) {
+                        const span = el.appendChild(document.createElement('span'));
+                        span.className = 'cell-clue'
+                        span.innerHTML = `${cell.clue?.matches.toString()}<br />${cell.axialCoordinates.toArray().join(',')}`;
+                    }
                     instance.container.cellContainers?.push(el);
                     instance.container.element.appendChild(el)
                 }

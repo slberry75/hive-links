@@ -11,9 +11,9 @@ export class ColorRegion {
 
     // derived properties
     get neighboringCoordinates(): AxialCoordinates[] {
-        return this.cells
+        return [... new Set(this.cells
                 .flatMap(cell => cell.getNeigboringCoordinates())
-                .filter(cell => !this.isMemberCell(cell))
+                .filter(cell => !this.isMemberCell(cell)))]
     }
 
     constructor(color: HexLinkColor) {

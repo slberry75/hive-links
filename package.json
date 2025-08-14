@@ -2,18 +2,21 @@
   "name": "hive-links",
   "version": "1.0.0",
   "main": "script.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite src/game",
-    "build": "vite build src/game", 
+    "builder": "vite src --open puzzle-generator/",
+    "build": "vite build src/game",
     "preview": "vite preview src/game",
-    "flatten": "./flatten.sh > codebase.txt"  
+    "flatten": "./flatten.sh > codebase.txt"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/node": "^24.2.1",
     "typescript": "^5.9.2",
     "vite": "^7.1.1"
   }

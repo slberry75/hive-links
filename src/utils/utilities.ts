@@ -1,4 +1,4 @@
-export function getRandomEntry<T> (array: T[]) {
+export function getRandomEntry<T> (array: T[]):null | T {
     if (array.length === 0)
         throw new RangeError('Cannot retrieve random entry from empty array');
 

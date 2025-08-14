@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive Links - Hex Grid</title>
+    <link rel="stylesheet" href="../game/styles.css">
+    <link rel="stylesheet" href="generator-styles.css">
+    <script src="./script.ts" type="module" defer></script>
+    <style id="dynamic-styles">
+    </style>
+</head>
+<body>
+    <h1>🐝 Hive Links Generator</h1>
+    
+    <div class="instructions">
+        <strong>Goal:</strong> Fill the hexagonal grid with colors so that:
+        <ul>
+            <li>Numbers show how many neighbors share the same color</li>
+            <li>All cells of each color form one connected group</li>
+            <li>No single cell is completely surrounded by the opposite color</li>
+        </ul>
+    </div>
+    
+    <div id="game-container" class="builder">
+        <div class="controls">
+            <!-- Generator Controls -->
+            <div class="generator-section">
+                <label>Rings:</label>
+                <input type="number" id="rings-input" value="2" min="1" max="5">
+                <button onclick="generateGrid()" class="button-primary">Generate Grid</button>
+                
+                <!-- Original Game Controls (modified for generator) -->
+                <div class="split-button">
+                    <button onclick="toggleRemoveMode()" id="mode-button">Remove Color</button>
+                    <button onclick="toggleShowSolution()" id="solution-button">Show Solution</button>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <label>Colors:</label>
+                <div class="color-list" id="color-list">
+                    <!-- Colors will be populated here -->
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: rgb(255, 166, 0);"></div>
+                        <button class="remove-color">×</button>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: rgb(93, 0, 255);"></div>
+                        <button class="remove-color">×</button>
+                    </div>
+                </div>
+                <div id="color-controls">
+                    <div class="color-item editing">
+                        <input type="color" id="color-picker">
+                        <button id="cancel-color" class="remove-color">x</button>
+                        <button id="save-color">Save Color</button>
+                    </div>
+                    <button id="add-color">Add Color</button>
+                </div>
+            </div>
+            
+
+            <div class="generator-section">
+                
+                <button class="button-primary">Generate Complete Solution</button>
+                <button id="export-puzzle" class="button-export">Export Puzzle</button>
+                <button onclick="restoreAllClues()">Restore All Clues</button>
+                <button onclick="resetGenerator()">Reset</button>
+            </div>
+        </div>
+        
+        <div id="hex-grid"></div>
+        
+        <div id="status">Click hexagons to change their color!</div>
+    </div>
+
+</body>
+</html>
